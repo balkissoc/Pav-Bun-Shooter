@@ -1,66 +1,985 @@
 <!doctype html>
 <html lang="en-AU">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pav Bun Shooter</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="page-shell">
-      <section class="hero-card">
-        <div class="title-block">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pav Bun Shooter</title>
+  <style>
+    :root {
+      --ink:#21143f;
+      --muted:#665878;
+      --pink:#ff2aa3;
+      --orange:#ff9d22;
+      --yellow:#ffe45c;
+      --cyan:#29e6ff;
+      --purple:#7c3cff;
+      --green:#19c37d;
+      --danger:#ff3b55;
+      --glass:rgba(255,255,255,.78);
+    }
+
+    * { box-sizing:border-box; }
+
+    html, body {
+      margin:0;
+      min-height:100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      overflow-x:hidden;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255,228,92,.95), transparent 18rem),
+        radial-gradient(circle at 88% 8%, rgba(41,230,255,.9), transparent 20rem),
+        radial-gradient(circle at 58% 94%, rgba(255,42,163,.75), transparent 24rem),
+        linear-gradient(135deg, #fff0ba 0%, #ffd4ed 42%, #d6fbff 100%);
+    }
+
+    .page {
+      width:min(1200px, calc(100% - 24px));
+      margin:0 auto;
+      padding:24px 0;
+    }
+
+    .card {
+      position:relative;
+      overflow:hidden;
+      border:5px solid rgba(255,255,255,.9);
+      border-radius:34px;
+      padding:22px;
+      background:rgba(255,255,255,.62);
+      box-shadow:0 30px 90px rgba(58,26,111,.28);
+      backdrop-filter:blur(12px);
+    }
+
+    .card::before, .card::after {
+      content:"";
+      position:absolute;
+      width:260px;
+      height:260px;
+      border-radius:52px;
+      background:linear-gradient(135deg, rgba(255,42,163,.24), rgba(41,230,255,.18));
+      transform:rotate(24deg);
+      pointer-events:none;
+    }
+
+    .card::before { right:-120px; top:-130px; }
+    .card::after { left:-155px; bottom:-165px; }
+
+    .top {
+      position:relative;
+      z-index:2;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:18px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .eyebrow {
+      margin:0 0 8px;
+      font-weight:950;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:#8423ff;
+    }
+
+    h1 {
+      margin:0;
+      font-size:clamp(2.6rem, 8vw, 6.8rem);
+      line-height:.88;
+      letter-spacing:-.08em;
+      text-transform:uppercase;
+      background:linear-gradient(90deg, var(--orange), var(--yellow), var(--pink), var(--cyan));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow:0 7px 0 rgba(60,20,90,.15);
+    }
+
+    .subtitle {
+      max-width:850px;
+      margin:14px 0 0;
+      color:var(--muted);
+      font-weight:720;
+      font-size:1.05rem;
+    }
+
+    .actions {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    button {
+      border:0;
+      cursor:pointer;
+      font:inherit;
+      font-weight:950;
+      color:white;
+      border-radius:18px;
+      padding:12px 18px;
+      background:linear-gradient(135deg, var(--pink), var(--purple));
+      box-shadow:0 10px 24px rgba(124,60,255,.34);
+      transition:transform .12s ease, filter .12s ease;
+    }
+
+    button:hover { transform:translateY(-1px) scale(1.02); filter:brightness(1.06); }
+    button:active { transform:translateY(1px) scale(.99); }
+    button.secondary { background:linear-gradient(135deg, #394766, #15192b); }
+    button.reset { background:linear-gradient(135deg, var(--orange), #ff4c7a); }
+
+    .layout {
+      position:relative;
+      z-index:2;
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 260px;
+      gap:16px;
+      align-items:stretch;
+    }
+
+    .gamebox {
+      position:relative;
+      overflow:hidden;
+      border:4px solid rgba(255,255,255,.96);
+      border-radius:30px;
+      background:#1b0c3d;
+      box-shadow:inset 0 0 34px rgba(255,255,255,.18), 0 16px 40px rgba(54,22,101,.28);
+    }
+
+    canvas {
+      display:block;
+      width:100%;
+      height:auto;
+      touch-action:none;
+    }
+
+    .overlay {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:rgba(19,8,45,.46);
+      backdrop-filter:blur(7px);
+    }
+
+    .overlay.hidden { display:none; }
+
+    .modal {
+      width:min(430px, 100%);
+      text-align:center;
+      border:4px solid white;
+      border-radius:30px;
+      padding:26px;
+      background:rgba(255,255,255,.95);
+      box-shadow:0 22px 70px rgba(0,0,0,.28);
+    }
+
+    .badge {
+      display:grid;
+      place-items:center;
+      width:74px;
+      height:74px;
+      margin:0 auto 12px;
+      border-radius:50%;
+      font-size:2.4rem;
+      background:radial-gradient(circle at 35% 30%, #fff1a8, #ffb02e 60%, #974a00);
+      box-shadow:inset 0 6px 10px rgba(255,255,255,.38), 0 10px 28px rgba(255,157,34,.42);
+    }
+
+    .modal h2 {
+      margin:0 0 8px;
+      font-size:2rem;
+    }
+
+    .modal p {
+      margin:0 0 18px;
+      color:var(--muted);
+      font-weight:720;
+    }
+
+    .panel {
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
+    .stat, .help, .tests, .tips > div {
+      border:3px solid rgba(255,255,255,.84);
+      border-radius:22px;
+      background:var(--glass);
+      box-shadow:0 10px 25px rgba(55,25,105,.12);
+    }
+
+    .stat {
+      padding:13px 14px;
+    }
+
+    .stat span {
+      display:block;
+      color:var(--muted);
+      font-size:.78rem;
+      font-weight:950;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .stat strong {
+      display:block;
+      margin-top:3px;
+      font-size:1.35rem;
+    }
+
+    .hp {
+      height:16px;
+      margin:8px 0 6px;
+      overflow:hidden;
+      border-radius:999px;
+      background:#eadff7;
+    }
+
+    #hpBar {
+      width:100%;
+      height:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--danger), var(--orange), var(--yellow));
+      transition:width .15s ease;
+    }
+
+    .help {
+      padding:14px;
+    }
+
+    .help h3 {
+      margin:0 0 8px;
+    }
+
+    .help p {
+      margin:8px 0;
+      color:var(--muted);
+      font-size:.92rem;
+      font-weight:650;
+    }
+
+    .mobile {
+      position:relative;
+      z-index:2;
+      display:none;
+      grid-template-columns:1fr auto;
+      gap:12px;
+      align-items:center;
+      margin-top:14px;
+    }
+
+    .dpad {
+      display:grid;
+      grid-template-columns:repeat(3, 52px);
+      grid-template-rows:repeat(2, 46px);
+      gap:8px;
+    }
+
+    .dpad i { display:block; }
+    .dpad button { padding:0; }
+    .fire { min-width:112px; min-height:74px; font-size:1.28rem; background:linear-gradient(135deg, var(--orange), var(--pink)); }
+
+    .tips {
+      position:relative;
+      z-index:2;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .tips > div {
+      padding:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .tips strong { color:var(--ink); }
+
+    .tests {
+      position:relative;
+      z-index:2;
+      margin-top:14px;
+      padding:12px 14px;
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .tests summary {
+      cursor:pointer;
+      color:var(--ink);
+      font-weight:950;
+    }
+
+    .tests ul {
+      margin:10px 0 0;
+      padding-left:20px;
+    }
+
+    @media (max-width:900px) {
+      .layout { grid-template-columns:1fr; }
+      .panel { grid-template-columns:repeat(2, 1fr); }
+      .help, .wide { grid-column:1 / -1; }
+      .mobile { display:grid; }
+      .tips { grid-template-columns:1fr; }
+    }
+
+    @media (max-width:560px) {
+      .card { padding:14px; border-radius:24px; }
+      .panel { grid-template-columns:1fr; }
+      .dpad { grid-template-columns:repeat(3,44px); grid-template-rows:repeat(2,42px); }
+      .fire { min-width:88px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <div class="top">
+        <div>
           <p class="eyebrow">Colourful office arcade</p>
           <h1>Pav Bun Shooter</h1>
           <p class="subtitle">Launch pav buns, dodge office clutter, clear two silly boss stages, and survive the lunch break.</p>
         </div>
-        <div class="game-layout">
-          <div class="canvas-wrap">
-            <canvas id="gameCanvas" width="960" height="600" aria-label="Pav Bun Shooter game canvas"></canvas>
-            <div id="overlay" class="overlay visible">
-              <div class="overlay-card">
-                <div class="bun-badge">🥖</div>
-                <h2 id="overlayTitle">Pav Bun Shooter</h2>
-                <p id="overlayText">A bright, silly office arcade game. Press Start and launch pav buns through two boss stages.</p>
-                <button id="startButton" class="primary-button">Start Game</button>
-              </div>
+        <div class="actions">
+          <button id="startButton">Start</button>
+          <button id="pauseButton" class="secondary">Pause</button>
+          <button id="resetButton" class="reset">Reset</button>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div class="gamebox">
+          <canvas id="game" width="960" height="600" aria-label="Pav Bun Shooter game canvas"></canvas>
+          <div id="overlay" class="overlay">
+            <div class="modal">
+              <div class="badge">🥖</div>
+              <h2 id="overlayTitle">Pav Bun Shooter</h2>
+              <p id="overlayText">Press Start. Move with WASD or arrow keys. Fire with Spacebar or PAV.</p>
+              <button id="overlayStart">Start Game</button>
             </div>
           </div>
-          <aside class="side-panel">
-            <div class="stat-card"><span>Score</span><strong id="scoreText">0</strong></div>
-            <div class="stat-card"><span>Best</span><strong id="bestText">0</strong></div>
-            <div class="stat-card"><span>Lives</span><strong id="livesText">❤️❤️❤️❤️❤️</strong></div>
-            <div class="stat-card"><span>Stage</span><strong id="stageText">1 / 2</strong></div>
-            <div class="stat-card wide">
-              <span>Boss HP</span>
-              <div class="hp-shell"><div id="bossHpBar" class="hp-bar"></div></div>
-              <strong id="bossHpText">18 / 18</strong>
-            </div>
-            <div class="controls-card">
-              <h3>Controls</h3>
-              <p><strong>Move:</strong> WASD or arrow keys</p>
-              <p><strong>Launch:</strong> Spacebar or PAV button</p>
-              <p><strong>Boost:</strong> collect butter for rapid golden pavs</p>
-            </div>
-          </aside>
         </div>
-        <div class="mobile-controls" aria-label="Mobile controls">
-          <div class="dpad">
-            <button data-move="up">↑</button>
-            <button data-move="left">←</button>
-            <button data-move="down">↓</button>
-            <button data-move="right">→</button>
+
+        <aside class="panel">
+          <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+          <div class="stat"><span>Best</span><strong id="best">0</strong></div>
+          <div class="stat"><span>Lives</span><strong id="lives">❤️❤️❤️❤️❤️</strong></div>
+          <div class="stat"><span>Stage</span><strong id="stage">1 / 2</strong></div>
+          <div class="stat wide">
+            <span>Boss HP</span>
+            <div class="hp"><div id="hpBar"></div></div>
+            <strong id="hpText">18 / 18</strong>
           </div>
-          <button id="fireButton" class="fire-button">PAV!</button>
+          <div class="help">
+            <h3>Controls</h3>
+            <p><strong>Move:</strong> WASD or arrow keys</p>
+            <p><strong>Launch:</strong> Spacebar or PAV button</p>
+            <p><strong>Boost:</strong> collect butter for rapid golden pavs</p>
+          </div>
+        </aside>
+      </div>
+
+      <div class="mobile">
+        <div class="dpad">
+          <i></i><button data-move="up">↑</button><i></i>
+          <button data-move="left">←</button><button data-move="down">↓</button><button data-move="right">→</button>
         </div>
-        <section class="test-panel">
-          <details>
-            <summary>Logic tests: <span id="testSummary">not run</span></summary>
-            <ul id="testList"></ul>
-          </details>
-        </section>
-      </section>
-    </main>
-    <script src="script.js"></script>
-  </body>
+        <button id="fireButton" class="fire">PAV!</button>
+      </div>
+
+      <div class="tips">
+        <div><strong>Stage 1:</strong> dodge golf clubs and land pav hits.</div>
+        <div><strong>Final stage:</strong> dodge paperwork and finish the boss.</div>
+        <div><strong>Goal:</strong> defeat both bosses before time runs out.</div>
+      </div>
+
+      <div class="tests">
+        <details>
+          <summary>Logic tests: <span id="testSummary">not run</span></summary>
+          <ul id="testList"></ul>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const W = 960;
+    const H = 600;
+    const PLAYER = 46;
+    const BOSS = 82;
+
+    const stages = [
+      {
+        name: "Boss 1",
+        hp: 18,
+        speed: 2.0,
+        cooldown: 1200,
+        projectile: "🏌️",
+        projectileLabel: "golf club",
+        colours: ["#ff9d22", "#ff2aa3", "#7c3cff"]
+      },
+      {
+        name: "Final Boss",
+        hp: 26,
+        speed: 2.7,
+        cooldown: 820,
+        projectile: "📋",
+        projectileLabel: "paperwork",
+        colours: ["#29e6ff", "#2c6dff", "#7c3cff"]
+      }
+    ];
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+    const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    const distance = (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by);
+    const unit = (x, y) => {
+      const mag = Math.hypot(x, y) || 1;
+      return { x: x / mag, y: y / mag };
+    };
+
+    let keys = {};
+    let running = false;
+    let started = false;
+    let won = false;
+    let score = 0;
+    let best = 0;
+    let lives = 5;
+    let timeLeft = 80;
+    let stageIndex = 0;
+    let bossHp = stages[0].hp;
+    let lastFrame = 0;
+    let lastFire = 0;
+    let lastEnemyShot = 0;
+    let buns = [];
+    let enemyShots = [];
+    let particles = [];
+    let power = { x: 460, y: 130, active: true };
+
+    let player = { x: 75, y: 290, facing: 1, poweredUntil: 0, invulnerableUntil: 0 };
+    let boss = { x: 800, y: 260, vx: -2, vy: 2, stunnedUntil: 0 };
+
+    const $ = (id) => document.getElementById(id);
+
+    function runTests() {
+      const tests = [
+        ["clamp respects lower bound", clamp(-3, 0, 10) === 0],
+        ["clamp respects upper bound", clamp(20, 0, 10) === 10],
+        ["clamp preserves valid value", clamp(6, 0, 10) === 6],
+        ["collision detects overlap", overlap({x:0,y:0,w:10,h:10}, {x:5,y:5,w:10,h:10})],
+        ["collision rejects separated objects", !overlap({x:0,y:0,w:10,h:10}, {x:25,y:25,w:10,h:10})],
+        ["distance uses 3-4-5 triangle", distance(0, 0, 3, 4) === 5],
+        ["two boss stages exist", stages.length === 2],
+        ["final stage is harder", stages[1].hp > stages[0].hp && stages[1].cooldown < stages[0].cooldown],
+        ["unit vector works", Math.abs(unit(3, 4).x - 0.6) < 0.0001 && Math.abs(unit(3, 4).y - 0.8) < 0.0001]
+      ];
+
+      $("testSummary").textContent = `${tests.filter((test) => test[1]).length}/${tests.length} passing`;
+      $("testList").innerHTML = tests.map((test) => `<li>${test[1] ? "✅" : "❌"} ${test[0]}</li>`).join("");
+    }
+
+    function showOverlay(title, text) {
+      $("overlayTitle").textContent = title;
+      $("overlayText").textContent = text;
+      $("overlay").classList.remove("hidden");
+    }
+
+    function hideOverlay() {
+      $("overlay").classList.add("hidden");
+    }
+
+    function updateUI() {
+      best = Math.max(best, score);
+      $("score").textContent = score;
+      $("best").textContent = best;
+      $("lives").textContent = lives > 0 ? "❤️".repeat(lives) : "💔";
+      $("stage").textContent = `${stageIndex + 1} / ${stages.length}`;
+      $("hpText").textContent = `${Math.max(0, bossHp)} / ${stages[stageIndex].hp}`;
+      $("hpBar").style.width = `${clamp((bossHp / stages[stageIndex].hp) * 100, 0, 100)}%`;
+    }
+
+    function reset(autoStart = false) {
+      running = autoStart;
+      started = autoStart;
+      won = false;
+      score = 0;
+      lives = 5;
+      timeLeft = 80;
+      stageIndex = 0;
+      bossHp = stages[0].hp;
+      lastFire = 0;
+      lastEnemyShot = 0;
+      buns = [];
+      enemyShots = [];
+      particles = [];
+      power = { x: 460, y: 130, active: true };
+      player = { x: 75, y: 290, facing: 1, poweredUntil: 0, invulnerableUntil: 0 };
+      boss = { x: 800, y: 260, vx: -stages[0].speed, vy: stages[0].speed, stunnedUntil: 0 };
+      keys = {};
+      updateUI();
+
+      if (autoStart) {
+        hideOverlay();
+      } else {
+        showOverlay("Pav Bun Shooter", "Press Start. Move with WASD or arrow keys. Fire with Spacebar or PAV.");
+      }
+    }
+
+    function start() {
+      if (!started || lives <= 0 || timeLeft <= 0 || won) {
+        reset(true);
+      } else {
+        running = true;
+        hideOverlay();
+      }
+    }
+
+    function pause() {
+      if (!started || lives <= 0 || won || timeLeft <= 0) return;
+      running = !running;
+      if (running) {
+        hideOverlay();
+      } else {
+        showOverlay("Paused", "Press Start to resume the pav bun chaos.");
+      }
+    }
+
+    function fire() {
+      const now = performance.now();
+      if (!running) return;
+      const rapid = now < player.poweredUntil;
+      if (now - lastFire < (rapid ? 115 : 230)) return;
+
+      lastFire = now;
+      buns.push({
+        x: player.x + PLAYER / 2 + player.facing * 24,
+        y: player.y + PLAYER / 2,
+        vx: player.facing * (rapid ? 15 : 11),
+        powered: rapid
+      });
+    }
+
+    function moveToNextStage() {
+      stageIndex = 1;
+      bossHp = stages[1].hp;
+      boss = { x: 800, y: 260, vx: -stages[1].speed, vy: stages[1].speed, stunnedUntil: performance.now() + 900 };
+      buns = [];
+      enemyShots = [];
+      player.x = 75;
+      player.y = 290;
+      player.invulnerableUntil = performance.now() + 1200;
+      showOverlay("Final Boss!", "The final boss has arrived with flying paperwork.");
+      setTimeout(() => {
+        if (running) hideOverlay();
+      }, 950);
+    }
+
+    function hurtPlayer(reason) {
+      if (performance.now() < player.invulnerableUntil) return;
+
+      lives -= 1;
+      player.invulnerableUntil = performance.now() + 1100;
+      for (let i = 0; i < 18; i++) {
+        particles.push({
+          x: player.x + 23,
+          y: player.y + 23,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          life: 25,
+          colour: "#ffffff"
+        });
+      }
+
+      if (lives <= 0) {
+        running = false;
+        showOverlay("Game Over", `${reason} Try again.`);
+      }
+    }
+
+    function update() {
+      const now = performance.now();
+      const stage = stages[stageIndex];
+
+      if (keys.left || keys.a) {
+        player.x -= 6;
+        player.facing = -1;
+      }
+      if (keys.right || keys.d) {
+        player.x += 6;
+        player.facing = 1;
+      }
+      if (keys.up || keys.w) player.y -= 6;
+      if (keys.down || keys.s) player.y += 6;
+
+      player.x = clamp(player.x, 12, W - PLAYER - 12);
+      player.y = clamp(player.y, 88, H - PLAYER - 18);
+
+      if (now > boss.stunnedUntil) {
+        boss.x += boss.vx;
+        boss.y += boss.vy;
+
+        if (boss.x < W * 0.48 || boss.x > W - BOSS - 18) boss.vx *= -1;
+        if (boss.y < 95 || boss.y > H - BOSS - 18) boss.vy *= -1;
+      }
+
+      boss.x = clamp(boss.x, W * 0.44, W - BOSS - 18);
+      boss.y = clamp(boss.y, 95, H - BOSS - 18);
+
+      buns = buns
+        .map((bun) => ({ ...bun, x: bun.x + bun.vx }))
+        .filter((bun) => bun.x > -40 && bun.x < W + 40);
+
+      enemyShots = enemyShots
+        .map((shot) => ({ ...shot, x: shot.x + shot.vx, y: shot.y + shot.vy, rotation: shot.rotation + 0.18 }))
+        .filter((shot) => shot.x > -50 && shot.x < W + 50 && shot.y > 50 && shot.y < H + 50);
+
+      if (now - lastEnemyShot > stage.cooldown && now > boss.stunnedUntil) {
+        lastEnemyShot = now;
+        const direction = unit(player.x - boss.x, player.y - boss.y);
+
+        enemyShots.push({
+          x: boss.x + 38,
+          y: boss.y + 38,
+          vx: direction.x * (stage.speed + 4.8),
+          vy: direction.y * (stage.speed + 4.8),
+          emoji: stage.projectile,
+          label: stage.projectileLabel,
+          rotation: 0
+        });
+      }
+
+      if (!power.active && Math.random() < 0.006) {
+        power = { x: 180 + Math.random() * 560, y: 115 + Math.random() * 385, active: true };
+      }
+
+      const bossRect = { x: boss.x + 8, y: boss.y + 8, w: BOSS - 16, h: BOSS - 16 };
+
+      for (const bun of buns) {
+        const bunSize = bun.powered ? 26 : 18;
+        if (!bun.dead && overlap({ x: bun.x - bunSize / 2, y: bun.y - bunSize / 2, w: bunSize, h: bunSize }, bossRect)) {
+          bun.dead = true;
+          bossHp -= bun.powered ? 2 : 1;
+          score += bun.powered ? 25 : 10;
+          boss.stunnedUntil = now + 280;
+          boss.vx = -boss.vx;
+
+          for (let i = 0; i < 12; i++) {
+            particles.push({
+              x: bun.x,
+              y: bun.y,
+              vx: (Math.random() - 0.5) * 7,
+              vy: (Math.random() - 0.5) * 7,
+              life: 20,
+              colour: bun.powered ? "#ffe45c" : "#ffb02e"
+            });
+          }
+        }
+      }
+
+      buns = buns.filter((bun) => !bun.dead);
+
+      if (bossHp <= 0) {
+        if (stageIndex === 0) {
+          moveToNextStage();
+        } else {
+          won = true;
+          running = false;
+          score += 500;
+          showOverlay("You Win!", "Both bosses have been defeated by maximum pav bun pressure.");
+        }
+      }
+
+      if (power.active && distance(player.x + 23, player.y + 23, power.x, power.y) < 35) {
+        power.active = false;
+        player.poweredUntil = now + 6500;
+        score += 50;
+      }
+
+      const playerRect = { x: player.x + 6, y: player.y + 7, w: PLAYER - 12, h: PLAYER - 9 };
+
+      if (overlap(playerRect, bossRect)) {
+        hurtPlayer("You bumped into the boss.");
+      }
+
+      const enemyHit = enemyShots.find((shot) => overlap({ x: shot.x, y: shot.y, w: 26, h: 26 }, playerRect));
+      if (enemyHit) {
+        enemyShots = enemyShots.filter((shot) => shot !== enemyHit);
+        hurtPlayer(`You were hit by ${enemyHit.label}.`);
+      }
+
+      particles = particles
+        .map((particle) => ({
+          ...particle,
+          x: particle.x + particle.vx,
+          y: particle.y + particle.vy,
+          vy: particle.vy + 0.12,
+          life: particle.life - 1
+        }))
+        .filter((particle) => particle.life > 0);
+
+      updateUI();
+    }
+
+    function roundRect(x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, radius);
+      ctx.fill();
+    }
+
+    function drawOffice() {
+      const stage = stages[stageIndex];
+      const gradient = ctx.createLinearGradient(0, 0, W, H);
+      gradient.addColorStop(0, stage.colours[0]);
+      gradient.addColorStop(0.52, stage.colours[1]);
+      gradient.addColorStop(1, stage.colours[2]);
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, W, H);
+
+      for (let i = 0; i < 42; i++) {
+        ctx.fillStyle = "rgba(255,255,255,.22)";
+        ctx.beginPath();
+        ctx.arc((i * 83 + timeLeft * 3) % W, 86 + (i * 47) % 460, 3 + (i % 5), 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,.24)";
+      ctx.fillRect(0, 0, W, 76);
+
+      ctx.fillStyle = "rgba(255,255,255,.25)";
+      roundRect(35, 105, 135, 70, 18);
+      roundRect(700, 105, 180, 78, 18);
+      roundRect(45, 475, 210, 65, 24);
+      roundRect(725, 470, 150, 62, 24);
+
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      roundRect(24, 88, 320, 46, 20);
+      ctx.fillStyle = "#21143f";
+      ctx.font = "900 18px system-ui";
+      ctx.fillText(`Time: ${timeLeft}s   Score: ${score}`, 42, 118);
+
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      roundRect(W - 302, 88, 270, 58, 20);
+      ctx.fillStyle = "#21143f";
+      ctx.font = "900 16px system-ui";
+      ctx.fillText(`${stage.name} HP: ${Math.max(0, bossHp)} / ${stage.hp}`, W - 278, 123);
+
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.font = "900 20px system-ui";
+      ctx.fillText(stageIndex === 0 ? "STAGE 1: GOLF CLUB CHAOS" : "FINAL STAGE: PAPERWORK STORM", 24, 48);
+    }
+
+    function drawPlayer() {
+      const now = performance.now();
+      ctx.save();
+      ctx.translate(player.x + 23, player.y + 23);
+      ctx.scale(player.facing, 1);
+
+      if (now < player.invulnerableUntil && Math.floor(now / 100) % 2 === 0) {
+        ctx.globalAlpha = 0.38;
+      }
+
+      if (now < player.poweredUntil) {
+        ctx.strokeStyle = "#ffe45c";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.arc(0, 0, 35, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#5b2b13";
+      ctx.beginPath();
+      ctx.arc(-2, -7, 23, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#d49352";
+      ctx.beginPath();
+      ctx.arc(0, -8, 16, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(-5, -10, 2.5, 0, Math.PI * 2);
+      ctx.arc(7, -10, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#e9306d";
+      ctx.fillRect(-6, 0, 14, 3);
+
+      ctx.fillStyle = "#ff2aa3";
+      roundRect(-21, 13, 42, 25, 10);
+
+      ctx.fillStyle = "#ffe45c";
+      ctx.fillRect(-18, 22, 36, 6);
+
+      ctx.fillStyle = "white";
+      ctx.font = "900 8px system-ui";
+      ctx.fillText("PAV", -10, 35);
+
+      ctx.restore();
+    }
+
+    function drawBoss() {
+      const now = performance.now();
+      ctx.save();
+      ctx.translate(boss.x + 41, boss.y + 41);
+
+      if (now < boss.stunnedUntil) {
+        ctx.fillStyle = "#fff";
+        ctx.font = "24px system-ui";
+        ctx.fillText("💫", -42, -35);
+        ctx.fillText("💫", 22, -35);
+      }
+
+      ctx.fillStyle = "#f2b17c";
+      ctx.beginPath();
+      ctx.arc(0, -12, 26, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = stageIndex === 0 ? "#fff4a8" : "#26324f";
+      ctx.fillRect(-22, -31, 44, 10);
+
+      ctx.fillStyle = "#111";
+      ctx.beginPath();
+      ctx.arc(-9, -15, 3, 0, Math.PI * 2);
+      ctx.arc(10, -15, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#b8002f";
+      ctx.fillRect(-8, -1, 18, 4);
+
+      ctx.fillStyle = stageIndex === 0 ? "#10a56a" : "#2456d8";
+      roundRect(-33, 17, 66, 36, 12);
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "900 10px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText(stageIndex === 0 ? "BOSS 1" : "FINAL", 0, 40);
+      ctx.textAlign = "left";
+
+      ctx.restore();
+    }
+
+    function drawBun(bun) {
+      ctx.save();
+      ctx.translate(bun.x, bun.y);
+
+      ctx.fillStyle = bun.powered ? "#ffe45c" : "#d88924";
+      ctx.beginPath();
+      ctx.arc(0, 0, bun.powered ? 14 : 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#fff1a8";
+      ctx.beginPath();
+      ctx.arc(-3, -4, bun.powered ? 5 : 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawEnemyShot(shot) {
+      ctx.save();
+      ctx.translate(shot.x + 13, shot.y + 13);
+      ctx.rotate(shot.rotation);
+      ctx.font = "24px system-ui";
+      ctx.fillText(shot.emoji, -12, 9);
+      ctx.restore();
+    }
+
+    function draw() {
+      drawOffice();
+
+      if (power.active) {
+        ctx.font = "28px system-ui";
+        ctx.fillText("🧈", power.x - 13, power.y + 10);
+      }
+
+      drawPlayer();
+      drawBoss();
+
+      for (const bun of buns) drawBun(bun);
+      for (const shot of enemyShots) drawEnemyShot(shot);
+
+      for (const particle of particles) {
+        ctx.globalAlpha = Math.max(0, particle.life / 25);
+        ctx.fillStyle = particle.colour;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    function loop(timestamp) {
+      if (!lastFrame) lastFrame = timestamp;
+      lastFrame = timestamp;
+
+      if (running) update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    setInterval(() => {
+      if (!running) return;
+      timeLeft -= 1;
+      if (timeLeft <= 0) {
+        running = false;
+        showOverlay("Time Up", "The lunch break ended before both bosses were cleared.");
+      }
+    }, 1000);
+
+    document.addEventListener("keydown", (event) => {
+      let key = event.key.toLowerCase();
+
+      if (key === " ") {
+        event.preventDefault();
+        fire();
+        return;
+      }
+
+      if (key === "arrowleft") key = "left";
+      if (key === "arrowright") key = "right";
+      if (key === "arrowup") key = "up";
+      if (key === "arrowdown") key = "down";
+
+      keys[key] = true;
+    });
+
+    document.addEventListener("keyup", (event) => {
+      let key = event.key.toLowerCase();
+
+      if (key === "arrowleft") key = "left";
+      if (key === "arrowright") key = "right";
+      if (key === "arrowup") key = "up";
+      if (key === "arrowdown") key = "down";
+
+      keys[key] = false;
+    });
+
+    document.querySelectorAll("[data-move]").forEach((button) => {
+      button.addEventListener("pointerdown", () => { keys[button.dataset.move] = true; });
+      button.addEventListener("pointerup", () => { keys[button.dataset.move] = false; });
+      button.addEventListener("pointerleave", () => { keys[button.dataset.move] = false; });
+    });
+
+    $("startButton").addEventListener("click", start);
+    $("overlayStart").addEventListener("click", start);
+    $("pauseButton").addEventListener("click", pause);
+    $("resetButton").addEventListener("click", () => reset(false));
+    $("fireButton").addEventListener("click", fire);
+
+    runTests();
+    reset(false);
+    requestAnimationFrame(loop);
+  </script>
+</body>
 </html>
