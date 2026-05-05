@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pav Bun Shooter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-card">
+        <div class="title-block">
+          <p class="eyebrow">Colourful office arcade</p>
+          <h1>Pav Bun Shooter</h1>
+          <p class="subtitle">Launch pav buns, dodge office clutter, clear two silly boss stages, and survive the lunch break.</p>
+        </div>
+        <div class="game-layout">
+          <div class="canvas-wrap">
+            <canvas id="gameCanvas" width="960" height="600" aria-label="Pav Bun Shooter game canvas"></canvas>
+            <div id="overlay" class="overlay visible">
+              <div class="overlay-card">
+                <div class="bun-badge">🥖</div>
+                <h2 id="overlayTitle">Pav Bun Shooter</h2>
+                <p id="overlayText">A bright, silly office arcade game. Press Start and launch pav buns through two boss stages.</p>
+                <button id="startButton" class="primary-button">Start Game</button>
+              </div>
+            </div>
+          </div>
+          <aside class="side-panel">
+            <div class="stat-card"><span>Score</span><strong id="scoreText">0</strong></div>
+            <div class="stat-card"><span>Best</span><strong id="bestText">0</strong></div>
+            <div class="stat-card"><span>Lives</span><strong id="livesText">❤️❤️❤️❤️❤️</strong></div>
+            <div class="stat-card"><span>Stage</span><strong id="stageText">1 / 2</strong></div>
+            <div class="stat-card wide">
+              <span>Boss HP</span>
+              <div class="hp-shell"><div id="bossHpBar" class="hp-bar"></div></div>
+              <strong id="bossHpText">18 / 18</strong>
+            </div>
+            <div class="controls-card">
+              <h3>Controls</h3>
+              <p><strong>Move:</strong> WASD or arrow keys</p>
+              <p><strong>Launch:</strong> Spacebar or PAV button</p>
+              <p><strong>Boost:</strong> collect butter for rapid golden pavs</p>
+            </div>
+          </aside>
+        </div>
+        <div class="mobile-controls" aria-label="Mobile controls">
+          <div class="dpad">
+            <button data-move="up">↑</button>
+            <button data-move="left">←</button>
+            <button data-move="down">↓</button>
+            <button data-move="right">→</button>
+          </div>
+          <button id="fireButton" class="fire-button">PAV!</button>
+        </div>
+        <section class="test-panel">
+          <details>
+            <summary>Logic tests: <span id="testSummary">not run</span></summary>
+            <ul id="testList"></ul>
+          </details>
+        </section>
+      </section>
+    </main>
+    <script src="script.js"></script>
+  </body>
+</html>
